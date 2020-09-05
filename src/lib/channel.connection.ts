@@ -56,11 +56,15 @@ export class ChannelConnection {
   }
 
   stop() {
-    // Clear the message handler so we stop effectively listening
-    this.channel.onmessage = () => {
-    };
-    this.peerTimeouts      = {};
-    this.peers             = [];
+    if (this.onlineInterval) {
+      // Clear the message handler so we stop effectively listening
+      this.channel.onmessage = () => {
+      };
+      this.peerTimeouts      = {};
+      this.peers             = [];
+      clearInterval(this.onlineInterval);
+      this.onlineInterval = null;
+    }
   }
 
   emit(channel: string, event: string, payload?: any) {
