@@ -21,8 +21,9 @@ export class ChannelConnection {
   }
 
   start() {
+    this.emit("discovery", "online");
     this.onlineInterval    = setInterval(() => {
-      this.emit("discovery", "online", this.instanceId);
+      this.emit("discovery", "online");
     }, 1000);
     this.channel.onmessage = (message) => {
       if (typeof message.data !== "object") {
