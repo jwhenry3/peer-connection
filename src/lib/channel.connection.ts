@@ -88,13 +88,10 @@ export class ChannelConnection {
         this.off(channel, event + ".response", cb);
       }, timeout);
       let cb     = (event: CustomEvent) => {
-        if (event.detail.id === id) {
-          resolve(event.detail.data);
-          this.off(channel, event + ".response", cb);
-          clearTimeout(handle);
-        }
+        resolve(event.detail.data);
+        clearTimeout(handle);
       };
-      this.on(channel, event + ".response", cb);
+      this.once(channel, event + ".response", cb, (event) => event.detail.id === id);
       this.emit(channel, event + ".request", {
         id,
         data  : payload,
@@ -113,6 +110,16 @@ export class ChannelConnection {
 
   on(channel: string, event: string, cb: (event: CustomEvent) => void) {
     this.events.addEventListener(channel + "." + event, cb as (event: Event) => void);
+  }
+
+  once(channel: string, event: string, cb: (event: CustomEvent) => void, comparison: (event: CustomEvent) => boolean) {
+    let callback = (e: CustomEvent) => {
+      if (!comparison || comparison(e)) {
+        this.off(channel, event, callback);
+        cb(e);
+      }
+    };
+    this.on(channel, event, callback);
   }
 
   off(channel: string, event: string, cb: (event: CustomEvent) => void) {
